@@ -1,0 +1,44 @@
+attrs==23.2.0
+base58==2.1.1
+certifi==2023.11.17
+cffi==1.16.0
+charset-normalizer==3.3.2
+cytoolz==0.12.2
+docopt==0.6.2
+dot20 @ git+https://github.com/octavei/dot-20.git@a0f4d42e3bbdc3a534f4f631ab8927b92b369282
+dotacrawler @ git+https://github.com/DOTA-DOT20/dota-indexer-crawler.git@7053b520738c494fd3d76c39b12c07bb695f9afd
+dotadb @ git+https://github.com/DOTA-DOT20/dota-indexer-db.git@ce713b58ea7742e08dad7caf14e0e2b4fe94a1da
+ecdsa==0.18.0
+eth-hash==0.6.0
+eth-keys==0.5.0
+eth-typing==4.0.0
+eth-utils==2.3.1
+greenlet==3.0.3
+idna==3.6
+jsonschema==4.21.1
+jsonschema-specifications==2023.12.1
+loguru==0.7.2
+more-itertools==10.2.0
+mysql-connector==2.2.9
+mysql-connector-python==8.3.0
+py-bip39-bindings==0.1.11
+py-ed25519-zebra-bindings==1.0.1
+py-sr25519-bindings==0.2.0
+pycparser==2.21
+pycryptodome==3.20.0
+PyMySQL==1.1.0
+PyNaCl==1.5.0
+python-dotenv==1.0.0
+referencing==0.33.0
+requests==2.31.0
+rpds-py==0.17.1
+scalecodec==1.2.7
+six==1.16.0
+SQLAlchemy==2.0.25
+substrate-interface==1.7.5
+toolz==0.12.0
+typing_extensions==4.9.0
+urllib3==2.1.0
+websocket-client==1.7.0
+xxhash==3.4.1
+yarg==0.1.9
