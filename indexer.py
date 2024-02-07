@@ -356,7 +356,7 @@ if __name__ == "__main__":
     status = db.get_indexer_status("dot-20")
     start_block = int(os.getenv("START_BLOCK")) if status is None else status[1] + 1
     print(f"start block: {start_block}")
-    logger.add("file.log", level="INFO", rotation="{} day".format(os.getenv("ROTATION")),
+    logger.add("file.log", level="DEBUG", rotation="{} day".format(os.getenv("ROTATION")),
                retention="{} weeks".format(os.getenv("RENTENTION")))
     indexer = Indexer(db, logger, RemarkCrawler(connect_substrate(), int(os.getenv("DELAY_BLOCK")), start_block))
     indexer.run()
