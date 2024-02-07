@@ -305,7 +305,7 @@ class Indexer:
     # 6. Update indexer_status
     def _execute_remarks_by_per_batchall(self, remaks: list[dict]):
         base_filter_res = self._base_filter_remarks(remaks)
-        self.logger.debug(f"The filtered dot-20 memos are: {base_filter_res}")
+        self.logger.debug(f"filtered dot-20 remarks: {base_filter_res}")
         mint_remarks, deploy_remarks, other_remarks = self._classify_remarks(base_filter_res)
 
         try:
