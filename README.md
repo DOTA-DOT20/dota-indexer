@@ -2,7 +2,7 @@
 Here I use docker to install the latest version
 # clone project
 ```
-git clone https://github.com/octavei/dota-indexer.git
+git clone  https://github.com/DOTA-DOT20/dota-indexer.git 
 ```
 # Create a python virtual environment and activate it
 ```angular2html
