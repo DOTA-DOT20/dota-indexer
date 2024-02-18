@@ -54,7 +54,7 @@ class Indexer:
         self.normal_mode = "normal"
         self.ticks_mode = {"dota": self.fair_mode}
 
-    # Filter the marks whose p is dot20 obtained in the crawler
+    # Filter the remarks whose p is dot20 obtained in the crawler
     # 1. Filter out illegal ops and ticks (not among supported ops and ticks)
     # 2. Mint (normal and fair modes) and deploy can only have one in a
     # transaction and cannot be in batches and cannot contain other ops.
@@ -149,9 +149,9 @@ class Indexer:
         return res
 
     # Carry out basic classification of remarks
-    # 1. Classify legal mint (normal, fair mode) marks
+    # 1. Classify legal mint (normal, fair mode) remarks
     # 2. Classify legal deployment remarks
-    # 3. Classify other marks
+    # 3. Classify other remarks
     # 4. In a block, one person can only submit one mint (fair and normal mode) remark
     # (regardless of whether it is an agent or multi-signature)
     def _classify_remarks(self, remarks: list[dict]) -> (Dict[str, list], list[dict], list[dict]):
@@ -296,8 +296,8 @@ class Indexer:
                 es = []
                 extrinsic_index = remark["extrinsic_index"]
 
-    # Execute marks for the entire block
-    # 1. Filter marks first
+    # Execute remarks for the entire block
+    # 1. Filter remarks first
     # 2. Classification remarks
     # 3. Perform deploy operation
     # 4. Perform mint operation

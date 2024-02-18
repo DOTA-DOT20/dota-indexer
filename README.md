@@ -1,3 +1,14 @@
+# OS
+linux or MacOS
+> Other operating systems can also be used, but are not recommended.
+# install rust environment
+```angular2html
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
+rustc --version
+
+```
+
 #  Install mysql
 Here I use docker to install the latest version
 # clone project
@@ -18,7 +29,7 @@ pip install -r requirements.txt
 ```angular2html
 cp .env.example .env
 ```
-Note that the configuration in the .env file should be modified according to your actual situation.
+> Note that the configuration in the .env file should be modified according to your actual situation.
 
 # run
 ```angular2html
