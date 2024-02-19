@@ -128,8 +128,10 @@ class Indexer:
                                     break
                                 else:
                                     memo_remark = bs[-1]["text"]
-                                    bs[0]["memo_remark"] = memo_remark
                                     bs = bs[:-1]
+                                    for bs_item in bs:
+                                        bs_item["memo_remark"] = memo_remark
+
                             elif memo.get("op") == self.memo_op and len(bs) == 1:
                                 self.logger.warning("There is only one memo field, discard the entire batchall")
                                 break

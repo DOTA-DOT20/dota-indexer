@@ -8,3 +8,8 @@ else:
     print("Not OK")
 
 print(int(1) / 3)
+
+ii = [{"a": 2}]
+for i in ii:
+    i["a"] = 100
+print(ii)
