@@ -1,5 +1,9 @@
 # OS
 linux or MacOS
+
+# python
+python3.11.6
+
 > Other operating systems can also be used, but are not recommended.
 # install rust environment
 ```angular2html
