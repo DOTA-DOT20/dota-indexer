@@ -1,10 +1,10 @@
 # OS
 linux or MacOS
-
+> Other operating systems can also be used, but are not recommended.
 # python
 python3.11.6
 
-> Other operating systems can also be used, but are not recommended.
+
 # install rust environment
 ```angular2html
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
