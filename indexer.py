@@ -40,7 +40,7 @@ class Indexer:
         self.crawler = crawler
         self.logger = logger
         self.dot20 = Dot20(db, self.crawler.substrate.ss58_format)
-        self.supported_ticks = ["dota", "dddd", "idot"]
+        # self.supported_ticks = ["dota", "dddd", "idot"]
         self.deploy_op = "deploy"
         self.mint_op = "mint"
         self.transfer_op = "transfer"
@@ -102,11 +102,11 @@ class Indexer:
                                 else:
                                     self.ticks_mode[memo.get("tick")] = deploy_info.get("mode")
 
-                            if memo.get("tick") not in self.supported_ticks or memo.get(
+                            if memo.get(
                                     "op") not in self.supported_ops:
                                 print(memo.get("tick"), memo.get(
                                     "op"))
-                                self.logger.warning("Illegal op or tick, discard the entire batchall")
+                                self.logger.warning("Illegal op, discard the entire batchall")
                                 break
 
                             if (memo.get("op") == self.mint_op and self.ticks_mode.get(
