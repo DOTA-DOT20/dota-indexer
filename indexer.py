@@ -141,12 +141,12 @@ class Indexer:
                         else:
                             self.logger.debug(f"filter batchalls :{bs}")
                             res.extend(bs)
-                        bs = []
+                        bs = [r]
                         btach_all_index = r["batchall_index"]
                         if is_vail_mint_or_deploy is False:
                             self.logger.warning("Illegal mint, discard the entire transaction")
                             break
-                es = []
+                es = [remark]
                 extrinsic_index = remark["extrinsic_index"]
         return res
 
@@ -186,7 +186,7 @@ class Indexer:
                         rs = []
                 extrinsic_index = remark["extrinsic_index"]
                 res.extend(rs)
-                rs = []
+                rs = [remark]
         self.logger.debug(f"classified mint transactions: {mint_remarks}")
         self.logger.debug(f"classified deploy transactions: {deploy_remarks}")
         self.logger.debug(f"classified other op transactions: {res}")
@@ -293,9 +293,9 @@ class Indexer:
                         except Exception as e:
                             self.logger.warning(f"{bs} fail：{e}")
                         self.logger.debug(f"batchalls success: {bs}")
-                        bs = []
+                        bs = [b]
                         batchall_index = b["batchall_index"]
-                es = []
+                es = [remark]
                 extrinsic_index = remark["extrinsic_index"]
 
     # Execute remarks for the entire block
