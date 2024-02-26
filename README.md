@@ -15,7 +15,10 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source $HOME/.cargo/env
 rustc --version
 ```
-
+# OpenSSL
+```angular2html
+sudo apt install libssl-dev libssl libcrypto
+```
 # Install and setup mysql
 ```
 sudo apt update
