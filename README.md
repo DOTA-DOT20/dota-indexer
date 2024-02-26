@@ -6,10 +6,10 @@ Linux(Ubuntu 20.04/22.04) or MacOS
 > Other operating systems can also be used, but are not recommended.
 
 
-# python
+# Install python
 python 3.10 or above
 
-# install rust environment (only for Windows)
+# Install Rust environment (only for Windows)
 ```angular2html
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source $HOME/.cargo/env
@@ -46,7 +46,7 @@ python3 -m venv myenv
 source myenv/bin/activate
 ```
 
-# pip install
+# Install the indexer
 ```angular2html
 cd dota-indexer
 pip install -r requirements.txt
@@ -80,15 +80,27 @@ START_BLOCK=700000
 # How many blocks to delay the final block
 DELAY_BLOCK=3
 
+
+Press Ctrl+x / y / Enter to quit the editor
 ```
 
 
 
 > Note that the configuration in the .env file should be modified according to your actual situation.
 
-# run
+# Run the indexer
 ```angular2html
 python indexer.py
+
+You could use screen or nohup & to run the indexer on the background
 ```
 
+# Connect to your database
+```
+mysql -u dota -p dota
 
+Host: 127.0.0.1
+user: dota
+password: Dota$2024
+database: dota
+```
