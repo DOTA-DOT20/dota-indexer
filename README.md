@@ -1,3 +1,6 @@
+# Video Tutorial
+[![asciicast](https://asciinema.org/a/HNjOsxkvpNGFF4yGZhM9DseEr.svg)](https://asciinema.org/a/HNjOsxkvpNGFF4yGZhM9DseEr)
+
 # OS
 Linux(Ubuntu 20.04/22.04) or MacOS
 > Other operating systems can also be used, but are not recommended.
@@ -21,12 +24,15 @@ sudo apt install mysql-server
 
 # Create user and database
 
-> sudo mysql
 ```
+sudo mysql
+
 CREATE USER 'dota'@'localhost' IDENTIFIED BY 'Dota$2024';
 GRANT ALL PRIVILEGES ON *.* TO 'dota'@'localhost';
 FLUSH PRIVILEGES;
 CREATE DATABASE dota;
+
+exit
 ```
 
 # Clone indexer
@@ -53,7 +59,7 @@ nano .env
 
 # mysql
 HOST="localhost"
-MYSQLUSER="dota2"
+MYSQLUSER="dota"
 PASSWORD="Dota$2024"
 DATABASE="dota"
 
@@ -70,7 +76,7 @@ RENTENTION=4
 # Block to start indexing
 # START_BLOCK should be the same across the entire network and is part of the consensus.
 # When the indexer is first started, it should be near the latest block of the network.
-START_BLOCK=500000
+START_BLOCK=700000
 # How many blocks to delay the final block
 DELAY_BLOCK=3
 
