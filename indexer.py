@@ -290,8 +290,8 @@ class Indexer:
                                         raise e
                         except SQLAlchemyError as e:
                             raise e
-                        # except Exception as e:
-                        #     pass
+                        except Exception as e:
+                            self.logger.warning(f"{bs} fail：{e}")
                         self.logger.debug(f"batchalls success: {bs}")
                         bs = []
                         batchall_index = b["batchall_index"]
