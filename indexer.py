@@ -318,6 +318,7 @@ class Indexer:
                 self._do_other_ops(other_remarks)
                 self.db.insert_or_update_indexer_status({"p": "dot-20", "indexer_height": self.crawler.start_block,
                                                          "crawler_height": self.crawler.start_block})
+
             self.db.session.commit()
         except Exception as e:
             self.logger.error(f"Transactions execution for the entire block failed：{e}")
@@ -336,6 +337,7 @@ class Indexer:
                     self.crawler.start_block += 1
             except (ConnectionError, SubstrateRequestException, WebSocketConnectionClosedException,
                     WebSocketTimeoutException) as e:
+
                 self.logger.warning(f"Disconnected, connecting. . . . {e}")
                 try:
                     self.crawler.substrate = connect_substrate()
@@ -352,6 +354,11 @@ if __name__ == "__main__":
     db = DotaDB(db_url=f'mysql+mysqlconnector://{user}:{password}@{host}/{database}')
 
     # db.drop_all_tick_table("dota")
+    # db.drop_all_tick_table("lol")
+    # db.drop_all_tick_table("idot")
+    # db.drop_all_tick_table("dddd")
+    # db.drop_all_tick_table("youw")
+
     # db.delete_all_tick_table("dota")
 
     db.session.commit()
