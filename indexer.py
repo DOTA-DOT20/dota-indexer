@@ -85,13 +85,6 @@ class Indexer:
                         is_vail_mint_or_deploy = True
                         for b_i, b in enumerate(bs):
                             memo = b["memo"]
-                            try:
-                                b_cp = b.copy()
-                                b_cp["memo"] = json.dumps(b["memo"])
-                                self.dot20.fmt_json_data(memo.get("op"), **b_cp)
-                            except Exception as e:
-                                self.logger.warning(f"Illegal json field or value, discard the entire batchall: {e}")
-                                break
 
                             if self.ticks_mode.get(memo.get("tick")) is None:
                                 deploy_info = self.dot20.get_deploy_info(memo.get("tick"))
@@ -101,6 +94,16 @@ class Indexer:
                                         break
                                 else:
                                     self.ticks_mode[memo.get("tick")] = deploy_info.get("mode")
+
+                            try:
+                                if memo.get("op") == self.mint_op and self.ticks_mode[memo.get("tick")] == self.fair_mode:
+                                    b["memo"]["lim"] = 0
+                                b_cp = b.copy()
+                                b_cp["memo"] = json.dumps(b["memo"])
+                                self.dot20.fmt_json_data(memo.get("op"), **b_cp)
+                            except Exception as e:
+                                self.logger.warning(f"Illegal json field or value, discard the entire batchall: {e}")
+                                break
 
                             if memo.get(
                                     "op") not in self.supported_ops:
