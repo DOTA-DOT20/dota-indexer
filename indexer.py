@@ -358,20 +358,20 @@ if __name__ == "__main__":
     database = os.getenv("DATABASE")
     db = DotaDB(db_url=f'mysql+mysqlconnector://{user}:{password}@{host}/{database}')
 
-    db.drop_all_tick_table("dota")
-    db.drop_all_tick_table("lol")
-    db.drop_all_tick_table("idot")
-    db.drop_all_tick_table("dddd")
-    db.drop_all_tick_table("youw")
-    db.drop_all_tick_table("vdot")
+    # db.drop_all_tick_table("dota")
+    # db.drop_all_tick_table("lol")
+    # db.drop_all_tick_table("idot")
+    # db.drop_all_tick_table("dddd")
+    # db.drop_all_tick_table("youw")
+    # db.drop_all_tick_table("vdot")
 
     # db.delete_all_tick_table("dota")
 
-    # db.session.commit()
-    # status = db.get_indexer_status("dot-20")
-    # start_block = int(os.getenv("START_BLOCK")) if status is None else status[1] + 1
-    # print(f"start block: {start_block}")
-    # logger.add("file.log", level="DEBUG", rotation="{} day".format(os.getenv("ROTATION")),
-    #            retention="{} weeks".format(os.getenv("RENTENTION")))
-    # indexer = Indexer(db, logger, RemarkCrawler(connect_substrate(), int(os.getenv("DELAY_BLOCK")), start_block))
-    # indexer.run()
+    db.session.commit()
+    status = db.get_indexer_status("dot-20")
+    start_block = int(os.getenv("START_BLOCK")) if status is None else status[1] + 1
+    print(f"start block: {start_block}")
+    logger.add("file.log", level="DEBUG", rotation="{} day".format(os.getenv("ROTATION")),
+               retention="{} weeks".format(os.getenv("RENTENTION")))
+    indexer = Indexer(db, logger, RemarkCrawler(connect_substrate(), int(os.getenv("DELAY_BLOCK")), start_block))
+    indexer.run()
