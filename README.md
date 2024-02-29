@@ -54,7 +54,7 @@ source myenv/bin/activate
 cd dota-indexer
 pip install -r requirements.txt
 ```
-# Modify modify environment variables as below
+# Modify environment variables as below
 
 ```angular2html
 cp .env.example .env
@@ -79,7 +79,7 @@ RENTENTION=4
 # Block to start indexing
 # START_BLOCK should be the same across the entire network and is part of the consensus.
 # When the indexer is first started, it should be near the latest block of the network.
-START_BLOCK=700000
+START_BLOCK=719300
 # How many blocks to delay the final block
 DELAY_BLOCK=3
 
