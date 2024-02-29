@@ -98,6 +98,8 @@ class Indexer:
                             try:
                                 if memo.get("op") == self.mint_op and self.ticks_mode[memo.get("tick")] == self.fair_mode:
                                     b["memo"]["lim"] = 1
+                                if memo.get("op") == self.mint_op and memo.get("to") is None:
+                                    b["memo"]["to"] = b["origin"]
                                 b_cp = b.copy()
                                 b_cp["memo"] = json.dumps(b["memo"])
                                 self.dot20.fmt_json_data(memo.get("op"), **b_cp)
