@@ -3,7 +3,7 @@
 
 # OS
 Linux(Ubuntu 20.04/22.04) or MacOS
-> Other operating systems can also be used, but are not recommended.
+> Other operating systems might be used smoothly, but not recommended.
 
 
 # Install python
@@ -66,7 +66,7 @@ MYSQLUSER="dota"
 PASSWORD="Dota$2024"
 DATABASE="dota"
 
-# The name of the connected network: Polkadot mainnet is Polkadot and testnet is Development
+# The name of the connected network: Polkadot mainnet should be "Polkadot" while testnet should be "Development"
 CHAIN="Development"
 URL="wss://rect.me"
 
@@ -80,6 +80,7 @@ RENTENTION=4
 # START_BLOCK should be the same across the entire network and is part of the consensus.
 # When the indexer is first started, it should be near the latest block of the network.
 START_BLOCK=719300
+
 # How many blocks to delay the final block
 DELAY_BLOCK=3
 
@@ -106,4 +107,17 @@ Host: 127.0.0.1
 user: dota
 password: Dota$2024
 database: dota
+```
+
+# Windows部署方式中文版（非常详细）
+```
+[WIN系统部署方式](https://ln2qk4x82d.k.topthink.com/@rmwnjw2qgg/anzhuangsuoxuruanjian.html)
+```
+
+# How to test the indexer
+```
+Send transactions according to the rules of dot20 standard
+
+[DOT20 - The Fungible Inscription standard](https://docs.dota.fyi/dot20)
+[DOT20 - 波卡同质铭文协议](https://docs.dota.fyi/dot20cn)
 ```
