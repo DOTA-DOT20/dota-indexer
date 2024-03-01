@@ -90,7 +90,7 @@ class Indexer:
                                 deploy_info = self.dot20.get_deploy_info(memo.get("tick"))
                                 if deploy_info is None:
                                     if memo.get("op") != self.deploy_op:
-                                        self.logger.warning("Non-deploy op, the tick has not been deployed, discard the entire batchall")
+                                        self.logger.warning(f"{b}:\n the tick {memo.get('tick')} has not been deployed, discard the entire batchall: \n {bs}")
                                         break
                                 else:
                                     self.ticks_mode[memo.get("tick")] = deploy_info.get("mode")
@@ -104,14 +104,14 @@ class Indexer:
                                 b_cp["memo"] = json.dumps(b["memo"])
                                 self.dot20.fmt_json_data(memo.get("op"), **b_cp)
                             except Exception as e:
-                                self.logger.warning(f"Illegal json field or value, discard the entire batchall: {e}")
+                                self.logger.warning(f"{b}:\n invail json field or value, discard the entire batchall: \n {bs} \n{e}")
                                 break
 
                             if memo.get(
                                     "op") not in self.supported_ops:
                                 print(memo.get("tick"), memo.get(
                                     "op"))
-                                self.logger.warning("Illegal op, discard the entire batchall")
+                                self.logger.warning(f"{b}:\n invail op, discard the entire batchall: \n {bs}")
                                 break
 
                             if (memo.get("op") == self.mint_op and self.ticks_mode.get(
@@ -119,17 +119,17 @@ class Indexer:
                                     memo.get("op") == self.deploy_op:
                                 if len(es) > 2:
                                     is_vail_mint_or_deploy = False
-                                    self.logger.warning("Illegal ordinary mint or deploy, abandon the entire transaction")
+                                    self.logger.warning(f"{b}:\n invail mint or deploy, abandon the entire transaction: \n {es}")
                                     break
                                 if len(bs) == 2 and bs[1]["memo"].get("op") != self.memo_op:
                                     is_vail_mint_or_deploy = False
-                                    self.logger.warning("Illegal ordinary mint or deploy, abandon the entire transaction")
+                                    self.logger.warning(f"{b}:\n invail ordinary mint or deploy, abandon the entire transaction: \n {es}")
                                     break
 
                             if memo.get("op") == "memo" and len(bs) > 1:
                                 if b_i != len(bs) - 1:
                                     print(b_i, len(bs) - 1)
-                                    self.logger.warning("memo is not in the last position, discard the entire batchall")
+                                    self.logger.warning(f"{b}:\n memo is not in the last position, discard the entire batchall:\n {bs}")
                                     break
                                 else:
                                     memo_remark = bs[-1]["text"]
@@ -138,7 +138,7 @@ class Indexer:
                                         bs_item["memo_remark"] = memo_remark
 
                             elif memo.get("op") == self.memo_op and len(bs) == 1:
-                                self.logger.warning("There is only one memo field, discard the entire batchall")
+                                self.logger.warning(f"{b}:\n There is only one memo field, discard the entire batchall: \n {bs}")
                                 break
                             else:
                                 pass
@@ -149,7 +149,7 @@ class Indexer:
                         bs = [r]
                         btach_all_index = r["batchall_index"]
                         if is_vail_mint_or_deploy is False:
-                            self.logger.warning("Illegal mint, discard the entire transaction")
+                            self.logger.warning(f"invail mint, discard the entire transaction:\n {es}")
                             break
                 es = [remark]
                 extrinsic_index = remark["extrinsic_index"]
@@ -184,7 +184,7 @@ class Indexer:
                                 mint_remarks[tick].append(remark)
                             unique_user[tick] = vail_mint_user.append(user)
                         else:
-                            self.logger.warning(f"{user} mint has been submitted in this block")
+                            self.logger.warning(f"{remark}: \n {user} mint has been submitted in this block")
                         rs = []
                     if memo.get("op") == self.deploy_op:
                         deploy_remarks.append(remark)
@@ -208,16 +208,16 @@ class Indexer:
                 with self.db.session.begin():
                     memo = item["memo"]
                     if memo.get("op") != self.deploy_op:
-                        raise Exception(f"{memo} Illegal entry into another code block")
+                        raise Exception(f"{memo} invail entry into another code block")
                     tick = self.dot20.deploy(**item)
                     self.db.create_tables_for_new_tick(tick)
                     self.logger.debug(f"deploy {item} success")
                 self.db.session.commit()
             except SQLAlchemyError as e:
-                self.logger.error(f"deploy: {item} fail：{e}")
+                self.logger.error(f"deploy {item} fail：{e}")
                 raise e
             except Exception as e:
-                self.logger.warning(f"deploy: {item} fail：{e}")
+                self.logger.warning(f"deploy {item} fail：{e}")
 
     # Perform mint (fair, normal) operation
     # 1. If it is fair mode, the average value will be calculated
@@ -241,13 +241,13 @@ class Indexer:
                             memo["lim"] = av_amt
                         v["memo"] = json.dumps(memo)
                         self.dot20.mint(**v)
-                        self.logger.debug(f"mint: {v} success")
+                        self.logger.debug(f"mint {v} success")
 
                 except SQLAlchemyError as e:
-                    self.logger.error(f"mint: {v} fail：{e}")
+                    self.logger.error(f"mint {v} fail：{e}")
                     raise e
                 except Exception as e:
-                    self.logger.warning(f"mint: {v} fail：{e}")
+                    self.logger.warning(f"mint {v} fail：{e}")
 
     # Perform other operations
     # 1. Other operations include: transfer, transferFrom, approve, mint (owner)
@@ -297,7 +297,7 @@ class Indexer:
                             raise e
                         except Exception as e:
                             self.logger.warning(f"{bs} fail：{e}")
-                        self.logger.debug(f"batchalls success: {bs}")
+                        self.logger.debug(f"other ops success: {bs}")
                         bs = [b]
                         batchall_index = b["batchall_index"]
                 es = [remark]
@@ -312,7 +312,7 @@ class Indexer:
     # 6. Update indexer_status
     def _execute_remarks_by_per_batchall(self, remaks: list[dict]):
         base_filter_res = self._base_filter_remarks(remaks)
-        self.logger.debug(f"filtered dot-20 remarks: {base_filter_res}")
+        self.logger.debug(f"filtered remarks: {base_filter_res}")
         mint_remarks, deploy_remarks, other_remarks = self._classify_remarks(base_filter_res)
 
         try:
@@ -326,7 +326,7 @@ class Indexer:
 
             self.db.session.commit()
         except Exception as e:
-            self.logger.error(f"Transactions execution for the entire block failed：{e}")
+            self.logger.error(f"Transactions execution failed：{e}")
             raise e
 
     def run(self):
@@ -335,9 +335,9 @@ class Indexer:
                 latest_block_hash = self.crawler.substrate.get_chain_finalised_head()
                 latest_block_num = self.crawler.substrate.get_block_number(latest_block_hash)
                 if self.crawler.start_block + self.crawler.delay <= latest_block_num:
-                    self.logger.debug(f"crawl  #{self.crawler.start_block} extrinsics")
+                    self.logger.debug(f"block #{self.crawler.start_block}")
                     remarks = self.crawler.get_dota_remarks_by_block_num(self.crawler.start_block)
-                    self.logger.debug(f"#{self.crawler.start_block} get remarks: {remarks}")
+                    self.logger.debug(f"crawler at block #{self.crawler.start_block} crawled remarks: {remarks}")
                     self._execute_remarks_by_per_batchall(remarks)
                     self.crawler.start_block += 1
             except (ConnectionError, SubstrateRequestException, WebSocketConnectionClosedException,
