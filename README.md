@@ -110,14 +110,19 @@ database: dota
 ```
 
 # Windows部署方式中文版（非常详细）
-```
 [WIN系统部署方式](https://ln2qk4x82d.k.topthink.com/@rmwnjw2qgg/anzhuangsuoxuruanjian.html)
-```
+
 
 # How to test the indexer
-```
 Send transactions according to the rules of dot20 standard
 
 [DOT20 - The Fungible Inscription standard](https://docs.dota.fyi/dot20)
+
+
 [DOT20 - 波卡同质铭文协议](https://docs.dota.fyi/dot20cn)
-```
+
+
+# Join the tester community
+
+[Telegram](https://t.me/dotaindexer)
+
