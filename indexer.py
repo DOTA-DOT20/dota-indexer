@@ -54,6 +54,20 @@ class Indexer:
         self.normal_mode = "normal"
         self.ticks_mode = {"dota": self.fair_mode}
 
+    def _classify_batch_all(self, key: str, remarks: list[dict], result: list[list[dict]]):
+        if len(remarks) == 0:
+            return result
+        start_index = remarks[0][key]
+        for id, remark in enumerate(remarks):
+            index = remark[key]
+            if index != start_index:
+                p, l = remarks[:id], remarks[id:]
+                result.append(p)
+                return self._classify_batch_all(key, l, result)
+            if id == len(remarks) - 1:
+                result.append(remarks)
+                return result
+
     # Filter the remarks whose p is dot20 obtained in the crawler
     # 1. Filter out illegal ops and ticks (not among supported ops and ticks)
     # 2. Mint (normal and fair modes) and deploy can only have one in a
@@ -61,98 +75,82 @@ class Indexer:
     # 3. The memo field must be at the last
     # 4. The json field must be legal
     # 5. The tick field must be expressed in ascii
-    def _base_filter_remarks(self, remarks: list[dict]) -> list[dict]:
+    def _base_filter_extrinsics(self, extrinsics: list[list[dict]]) -> list[list[dict]]:
         res = []
-        es = []
-        extrinsic_index = 0 if len(remarks) == 0 else remarks[0]["extrinsic_index"]
-        for remark_id, remark in enumerate(remarks):
-            if remark["memo"].get("tick") is not None and isinstance(remark["memo"].get("tick"), str):
-                remark["memo"]["tick"] = ascii(remark["memo"].get("tick")).lower().strip("'")
-
-            if remark["extrinsic_index"] == extrinsic_index:
-                es.append(remark)
-
-            if extrinsic_index != remark["extrinsic_index"] or remark_id == len(remarks) - 1:
-                self.logger.debug(f" #{remark['block_num']},  extrinsic_index {extrinsic_index}")
-                bs = []
-                btach_all_index = 0 if len(es) == 0 else es[0]["batchall_index"]
-                for i, r in enumerate(es):
-                    if btach_all_index == r["batchall_index"]:
-                        bs.append(r)
-
-                    if btach_all_index != r["batchall_index"] or i == len(es) - 1:
-                        self.logger.debug(f"batchall index {btach_all_index}, {bs}")
-                        is_vail_mint_or_deploy = True
-                        for b_i, b in enumerate(bs):
-                            memo = b["memo"]
-
-                            if self.ticks_mode.get(memo.get("tick")) is None:
-                                deploy_info = self.dot20.get_deploy_info(memo.get("tick"))
-                                if deploy_info is None:
-                                    if memo.get("op") != self.deploy_op:
-                                        self.logger.warning(f"{b}:\n the tick {memo.get('tick')} has not been deployed, discard the entire batchall: \n {bs}")
-                                        break
-                                else:
-                                    self.ticks_mode[memo.get("tick")] = deploy_info.get("mode")
-
-                            try:
-                                if memo.get("op") == self.mint_op and self.ticks_mode[memo.get("tick")] == self.fair_mode:
-                                    b["memo"]["lim"] = 1
-                                if memo.get("op") == self.mint_op and memo.get("to") is None:
-                                    b["memo"]["to"] = b["user"]
-                                b_cp = b.copy()
-                                b_cp["memo"] = json.dumps(b["memo"])
-                                self.dot20.fmt_json_data(memo.get("op"), **b_cp)
-                            except Exception as e:
-                                self.logger.warning(f"{b}:\n invail json field or value, discard the entire batchall: \n {bs} \n{e}")
+        for extrinsic in extrinsics:
+            self.logger.debug(f" #{extrinsic[0]['block_num']},  extrinsic_index {extrinsic[0]['extrinsic_index']}")
+            bs = self._classify_batch_all("batchall_index", extrinsic, [])
+            is_vail_mint_or_deploy = True
+            for batch_all in bs:
+                self.logger.debug(f"batchall index {batch_all[0]['batchall_index']}, {batch_all}")
+                for r_id, remark in enumerate(batch_all):
+                    if remark["memo"].get("tick") is not None and isinstance(remark["memo"].get("tick"), str):
+                        batch_all[r_id]["memo"]["tick"] = ascii(remark["memo"].get("tick")).lower().strip("'")
+                    memo = remark["memo"]
+                    if self.ticks_mode.get(memo.get("tick")) is None:
+                        deploy_info = self.dot20.get_deploy_info(memo.get("tick"))
+                        if deploy_info is None:
+                            if memo.get("op") != self.deploy_op:
+                                self.logger.warning(
+                                    f"{remark}:\n the tick {memo.get('tick')} has not been deployed, discard the entire batchall: \n {batch_all}")
                                 break
-
-                            if memo.get(
-                                    "op") not in self.supported_ops:
-                                print(memo.get("tick"), memo.get(
-                                    "op"))
-                                self.logger.warning(f"{b}:\n invail op, discard the entire batchall: \n {bs}")
-                                break
-
-                            if (memo.get("op") == self.mint_op and self.ticks_mode.get(
-                                    memo.get("tick")) != self.owner_mode) or \
-                                    memo.get("op") == self.deploy_op:
-                                if len(es) > 2:
-                                    is_vail_mint_or_deploy = False
-                                    self.logger.warning(f"{b}:\n invail mint or deploy, abandon the entire transaction: \n {es}")
-                                    break
-                                if len(bs) == 2 and bs[1]["memo"].get("op") != self.memo_op:
-                                    is_vail_mint_or_deploy = False
-                                    self.logger.warning(f"{b}:\n invail ordinary mint or deploy, abandon the entire transaction: \n {es}")
-                                    break
-
-                            if memo.get("op") == "memo" and len(bs) > 1:
-                                if b_i != len(bs) - 1:
-                                    print(b_i, len(bs) - 1)
-                                    self.logger.warning(f"{b}:\n memo is not in the last position, discard the entire batchall:\n {bs}")
-                                    break
-                                else:
-                                    memo_remark = bs[-1]["text"]
-                                    bs = bs[:-1]
-                                    for bs_item in bs:
-                                        bs_item["memo_remark"] = memo_remark
-
-                            elif memo.get("op") == self.memo_op and len(bs) == 1:
-                                self.logger.warning(f"{b}:\n There is only one memo field, discard the entire batchall: \n {bs}")
-                                break
-                            else:
-                                pass
-
                         else:
-                            self.logger.debug(f"filter batchalls :{bs}")
-                            res.extend(bs)
-                        bs = [r]
-                        btach_all_index = r["batchall_index"]
-                        if is_vail_mint_or_deploy is False:
-                            self.logger.warning(f"invail mint, discard the entire transaction:\n {es}")
+                            self.ticks_mode[memo.get("tick")] = deploy_info.get("mode")
+
+                    try:
+                        if memo.get("op") == self.mint_op and self.ticks_mode[memo.get("tick")] == self.fair_mode:
+                            batch_all[r_id]["memo"]["lim"] = 1
+                        if memo.get("op") == self.mint_op and memo.get("to") is None:
+                            batch_all[r_id]["memo"]["to"] = remark["user"]
+                        b_cp = batch_all[r_id].copy()
+                        b_cp["memo"] = json.dumps(remark["memo"])
+                        self.dot20.fmt_json_data(memo.get("op"), **b_cp)
+                    except Exception as e:
+                        self.logger.warning(
+                            f"{remark}:\n invail json field or value, discard the entire batchall: \n {batch_all} \n{e}")
+                        break
+
+                    if memo.get(
+                            "op") not in self.supported_ops:
+                        print(memo.get("tick"), memo.get(
+                            "op"))
+                        self.logger.warning(f"{remark}:\n invail op, discard the entire batchall: \n {batch_all}")
+                        break
+
+                    if (memo.get("op") == self.mint_op and self.ticks_mode.get(
+                            memo.get("tick")) != self.owner_mode) or \
+                            memo.get("op") == self.deploy_op:
+                        if len(extrinsic) > 2:
+                            is_vail_mint_or_deploy = False
+                            self.logger.warning(
+                                f"{remark}:\n invail mint or deploy, abandon the entire transaction: \n {extrinsic}")
                             break
-                es = [remark]
-                extrinsic_index = remark["extrinsic_index"]
+                        if len(batch_all) == 2 and batch_all[1]["memo"].get("op") != self.memo_op:
+                            is_vail_mint_or_deploy = False
+                            self.logger.warning(
+                                f"{remark}:\n invail ordinary mint or deploy, abandon the entire transaction: \n {extrinsic}")
+                            break
+
+                    if memo.get("op") == "memo" and len(batch_all) > 1:
+                        if r_id != len(batch_all) - 1:
+                            self.logger.warning(
+                                f"{remark}:\n memo is not in the last position, discard the entire batchall:\n {batch_all}")
+                            break
+                        else:
+                            memo_remark = batch_all[-1]["text"]
+                            batch_all = batch_all[:-1]
+                            for bs_item in batch_all:
+                                bs_item["memo_remark"] = memo_remark
+
+                    if memo.get("op") == self.memo_op and len(batch_all) == 1:
+                        self.logger.warning(
+                            f"{remark}:\n There is only one memo field, discard the entire batchall: \n {batch_all}")
+                        break
+                else:
+                    if is_vail_mint_or_deploy is False:
+                        self.logger.warning(f"invail mint, discard the entire transaction:\n {extrinsic}")
+                        break
+                    res.append(batch_all)
         return res
 
     # Carry out basic classification of remarks
@@ -161,41 +159,38 @@ class Indexer:
     # 3. Classify other remarks
     # 4. In a block, one person can only submit one mint (fair and normal mode) remark
     # (regardless of whether it is an agent or multi-signature)
-    def _classify_remarks(self, remarks: list[dict]) -> (Dict[str, list], list[dict], list[dict]):
+    def _classify_bs(self, bs: list[list[dict]]) -> (Dict[str, list], list[dict], list[dict]):
         unique_user: Dict[str, list[str]] = {}
         mint_remarks: Dict[str, list[dict]] = {}
-        extrinsic_index = 0 if len(remarks) == 0 else remarks[0]["extrinsic_index"]
-        res = []
-        rs = []
         deploy_remarks = []
-        for remark_id, remark in enumerate(remarks):
-            if extrinsic_index == remark["extrinsic_index"]:
-                rs.append(remark)
-
-            if extrinsic_index != remark["extrinsic_index"] or remark_id == len(remarks) - 1:
-                if len(rs) == 1:
-                    memo = rs[0].get("memo")
-                    user = rs[0].get("origin")
-                    tick = str(memo.get("tick"))
-                    if memo.get("op") == self.mint_op and self.ticks_mode.get(memo.get("tick")) != self.owner_mode:
-                        vail_mint_user = unique_user.get(tick) if unique_user.get(tick) is not None else []
-                        if user not in vail_mint_user:
-                            mint_remarks[tick] = [remark] if mint_remarks.get(tick) is None else \
-                                mint_remarks[tick].append(remark)
-                            unique_user[tick] = vail_mint_user.append(user)
+        other_remarks = []
+        for batch_all in bs:
+            if len(batch_all) == 1:
+                memo = batch_all[0]["memo"]
+                user = batch_all[0]["origin"]
+                tick = str(memo.get("tick"))
+                print("****"*100)
+                print(batch_all)
+                if memo.get("op") == self.mint_op and self.ticks_mode.get(memo.get("tick")) != self.owner_mode:
+                    vail_mint_user = unique_user.get(tick) if unique_user.get(tick) is not None else []
+                    if user not in vail_mint_user:
+                        if mint_remarks.get(tick) is None:
+                            mint_remarks[tick] = [batch_all[0]]
                         else:
-                            self.logger.warning(f"{remark}: \n {user} mint has been submitted in this block")
-                        rs = []
-                    if memo.get("op") == self.deploy_op:
-                        deploy_remarks.append(remark)
-                        rs = []
-                extrinsic_index = remark["extrinsic_index"]
-                res.extend(rs)
-                rs = [remark]
+                            old_rs = mint_remarks.get(tick)
+                            old_rs.extend(batch_all)
+                            mint_remarks[tick] = old_rs
+                        vail_mint_user.append(user)
+                        unique_user[tick] = vail_mint_user
+                    else:
+                        self.logger.warning(f"{batch_all}: \n {user} mint has been submitted in this block")
+                if memo.get("op") == self.deploy_op:
+                    deploy_remarks.extend(batch_all)
+            other_remarks.append(batch_all)
         self.logger.debug(f"classified mint transactions: {mint_remarks}")
         self.logger.debug(f"classified deploy transactions: {deploy_remarks}")
-        self.logger.debug(f"classified other op transactions: {res}")
-        return mint_remarks, deploy_remarks, res,
+        self.logger.debug(f"classified other op transactions: {other_remarks}")
+        return mint_remarks, deploy_remarks, other_remarks,
 
     # Perform deploy operation
     # 1. deploy is executed first, because the deploy operation in the same
@@ -239,7 +234,7 @@ class Indexer:
                         memo = v["memo"]
                         if mode == self.fair_mode:
                             memo["lim"] = av_amt
-                        v["memo"] = json.dumps(memo)
+                        # v["memo"] = json.dumps(memo)
                         self.dot20.mint(**v)
                         self.logger.debug(f"mint {v} success")
 
@@ -253,55 +248,37 @@ class Indexer:
     # 1. Other operations include: transfer, transferFrom, approve, mint (owner)
     # 2. Execute in batchall. Batch atomic operations must be performed in batchall.
     # Failure outside batchall will continue
-    def _do_other_ops(self, remarks: list[dict]):
-        es = []
-        extrinsic_index = 0 if len(remarks) == 0 else remarks[0]["extrinsic_index"]
-        for remark_id, remark in enumerate(remarks):
-
-            if extrinsic_index == remark["extrinsic_index"]:
-                print(remark_id, remark)
-                es.append(remark)
-            if extrinsic_index != remark["extrinsic_index"] or remark_id == len(remarks) - 1:
-                batchall_index = 0 if len(es) == 0 else es[0]["batchall_index"]
-                bs = []
-                for b_id, b in enumerate(es):
-                    if batchall_index == b["batchall_index"]:
-                        bs.append(b)
-
-                    if batchall_index != b["batchall_index"] or b_id == len(es) - 1:
+    def _do_other_ops(self, bs: list[list[dict]]):
+        for batch_all in bs:
+            try:
+                with self.db.session.begin_nested():
+                    for b in batch_all:
                         try:
-                            with self.db.session.begin_nested():
-                                for b in bs:
-                                    try:
-                                        b_m = b["memo"]
-                                        b["memo"] = json.dumps(b_m)
-                                        if b_m.get("op") == self.deploy_op:
-                                            raise Exception(f"enters a code block that does not belong to itself: {b}")
-                                        elif b_m.get("op") == self.mint_op and self.ticks_mode.get(
-                                                b_m.get("tick")) == self.owner_mode:
-                                            self.dot20.mint(**b)
-                                        elif b_m.get("op") == self.mint_op and self.ticks_mode.get(
-                                                b_m.get("tick")) != self.owner_mode:
-                                            raise Exception(f"enters a code block that does not belong to itself: {b}")
-                                        elif b_m.get("op") == self.transfer_op:
-                                            self.dot20.transfer(**b)
-                                        elif b_m.get("op") == self.approve_op:
-                                            self.dot20.approve(**b)
-                                        elif b_m.get("op") == self.transfer_from_op:
-                                            self.dot20.transferFrom(**b)
-                                        else:
-                                            raise Exception(f"not supported op: {b}")
-                                    except Exception as e:
-                                        raise e
-                        except SQLAlchemyError as e:
-                            raise e
+                            b_m = b["memo"]
+                            # b["memo"] = json.dumps(b_m)
+                            if b_m.get("op") == self.deploy_op:
+                                raise Exception(f"enters a code block that does not belong to itself: {b}")
+                            elif b_m.get("op") == self.mint_op and self.ticks_mode.get(
+                                    b_m.get("tick")) == self.owner_mode:
+                                self.dot20.mint(**b)
+                            elif b_m.get("op") == self.mint_op and self.ticks_mode.get(
+                                    b_m.get("tick")) != self.owner_mode:
+                                raise Exception(f"enters a code block that does not belong to itself: {b}")
+                            elif b_m.get("op") == self.transfer_op:
+                                self.dot20.transfer(**b)
+                            elif b_m.get("op") == self.approve_op:
+                                self.dot20.approve(**b)
+                            elif b_m.get("op") == self.transfer_from_op:
+                                self.dot20.transferFrom(**b)
+                            else:
+                                raise Exception(f"not supported op: {b}")
                         except Exception as e:
-                            self.logger.warning(f"{bs} fail：{e}")
-                        self.logger.debug(f"other ops success: {bs}")
-                        bs = [b]
-                        batchall_index = b["batchall_index"]
-                es = [remark]
-                extrinsic_index = remark["extrinsic_index"]
+                            raise e
+            except SQLAlchemyError as e:
+                raise e
+            except Exception as e:
+                self.logger.warning(f"{batch_all} fail：{e}")
+            self.logger.debug(f"other ops success: {batch_all}")
 
     # Execute remarks for the entire block
     # 1. Filter remarks first
@@ -310,10 +287,10 @@ class Indexer:
     # 4. Perform mint operation
     # 5. Perform other operations
     # 6. Update indexer_status
-    def _execute_remarks_by_per_batchall(self, remaks: list[dict]):
-        base_filter_res = self._base_filter_remarks(remaks)
-        self.logger.debug(f"filtered remarks: {base_filter_res}")
-        mint_remarks, deploy_remarks, other_remarks = self._classify_remarks(base_filter_res)
+    def _execute_remarks_by_per_batchall(self, extrinsics: list[list[dict]]):
+        base_filter_res = self._base_filter_extrinsics(extrinsics)
+        self.logger.debug(f"filtered extrinsics: {base_filter_res}")
+        mint_remarks, deploy_remarks, other_remarks = self._classify_bs(base_filter_res)
 
         try:
             self.db.session.commit()
