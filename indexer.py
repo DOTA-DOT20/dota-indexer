@@ -40,7 +40,6 @@ class Indexer:
         self.crawler = crawler
         self.logger = logger
         self.dot20 = Dot20(db, self.crawler.substrate.ss58_format)
-        # self.supported_ticks = ["dota", "dddd", "idot"]
         self.deploy_op = "deploy"
         self.mint_op = "mint"
         self.transfer_op = "transfer"
@@ -112,8 +111,6 @@ class Indexer:
 
                     if memo.get(
                             "op") not in self.supported_ops:
-                        print(memo.get("tick"), memo.get(
-                            "op"))
                         self.logger.warning(f"{remark}:\n invail op, discard the entire batchall: \n {batch_all}")
                         break
 
