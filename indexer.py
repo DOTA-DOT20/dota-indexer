@@ -179,9 +179,12 @@ class Indexer:
                         unique_user[tick] = vail_mint_user
                     else:
                         self.logger.warning(f"{batch_all}: \n {user} mint has been submitted in this block")
-                if memo.get("op") == self.deploy_op:
+                elif memo.get("op") == self.deploy_op:
                     deploy_remarks.extend(batch_all)
-            other_remarks.append(batch_all)
+                else:
+                    other_remarks.append(batch_all)
+            else:
+                other_remarks.append(batch_all)
         self.logger.debug(f"classified mint transactions: {mint_remarks}")
         self.logger.debug(f"classified deploy transactions: {deploy_remarks}")
         self.logger.debug(f"classified other op transactions: {other_remarks}")
