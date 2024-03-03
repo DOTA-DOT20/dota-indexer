@@ -169,8 +169,6 @@ class Indexer:
                 memo = batch_all[0]["memo"]
                 user = batch_all[0]["origin"]
                 tick = str(memo.get("tick"))
-                print("****"*100)
-                print(batch_all)
                 if memo.get("op") == self.mint_op and self.ticks_mode.get(memo.get("tick")) != self.owner_mode:
                     vail_mint_user = unique_user.get(tick) if unique_user.get(tick) is not None else []
                     if user not in vail_mint_user:
