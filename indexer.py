@@ -86,7 +86,7 @@ class Indexer:
                 for r_id, remark in enumerate(batch_all):
                     if remark["memo"].get("tick") is not None and isinstance(remark["memo"].get("tick"), str):
                         batch_all[r_id]["memo"]["tick"] = ascii(remark["memo"].get("tick")).lower().strip("'")
-                    memo = remark["memo"]
+                    memo = batch_all[r_id]["memo"]
                     if self.ticks_mode.get(memo.get("tick")) is None:
                         deploy_info = self.dot20.get_deploy_info(memo.get("tick"))
                         if deploy_info is None:
