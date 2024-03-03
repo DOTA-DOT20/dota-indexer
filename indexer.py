@@ -80,6 +80,7 @@ class Indexer:
             self.logger.debug(f" #{extrinsic[0]['block_num']},  extrinsic_index {extrinsic[0]['extrinsic_index']}")
             bs = self._classify_batch_all("batchall_index", extrinsic, [])
             is_vail_mint_or_deploy = True
+            r = []
             for batch_all in bs:
                 self.logger.debug(f"batchall index {batch_all[0]['batchall_index']}, {batch_all}")
                 for r_id, remark in enumerate(batch_all):
@@ -144,10 +145,13 @@ class Indexer:
                             f"{remark}:\n There is only one memo field, discard the entire batchall: \n {batch_all}")
                         break
                 else:
-                    if is_vail_mint_or_deploy is False:
-                        self.logger.warning(f"invail mint, discard the entire transaction:\n {extrinsic}")
-                        break
-                    res.append(batch_all)
+                    r.append(batch_all)
+
+            if is_vail_mint_or_deploy is False:
+                self.logger.warning(f"invail mint, discard the entire transaction:\n {extrinsic}")
+            else:
+                res.extend(r)
+
         return res
 
     # Carry out basic classification of remarks
