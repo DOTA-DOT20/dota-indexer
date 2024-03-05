@@ -135,7 +135,7 @@ class Indexer:
                                 f"{remark}:\n memo is not in the last position, discard the entire batchall:\n {batch_all}")
                             break
                         else:
-                            memo_remark = batch_all[-1]["text"]
+                            memo_remark = batch_all[-1]["memo"]["text"]
                             batch_all = batch_all[:-1]
                             for bs_item in batch_all:
                                 bs_item["memo_remark"] = memo_remark
