@@ -90,7 +90,7 @@ class Indexer:
                     if self.ticks_mode.get(memo.get("tick")) is None:
                         deploy_info = self.dot20.get_deploy_info(memo.get("tick"))
                         if deploy_info is None:
-                            if memo.get("op") != self.deploy_op:
+                            if memo.get("op") != self.deploy_op and memo.get("op") != self.memo_op:
                                 self.logger.warning(
                                     f"{remark}:\n the tick {memo.get('tick')} has not been deployed, discard the entire batchall: \n {batch_all}")
                                 break
@@ -151,7 +151,6 @@ class Indexer:
                 self.logger.warning(f"invail mint, discard the entire transaction:\n {extrinsic}")
             else:
                 res.extend(r)
-
         return res
 
     # Carry out basic classification of remarks
