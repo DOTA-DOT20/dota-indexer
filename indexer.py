@@ -275,11 +275,11 @@ class Indexer:
                                 raise Exception(f"not supported op: {b}")
                         except Exception as e:
                             raise e
+                    self.logger.debug(f"other ops success: {batch_all}")
             except SQLAlchemyError as e:
                 raise e
             except Exception as e:
                 self.logger.warning(f"{batch_all} fail：{e}")
-            self.logger.debug(f"other ops success: {batch_all}")
 
     # Execute remarks for the entire block
     # 1. Filter remarks first
