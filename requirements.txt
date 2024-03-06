@@ -6,7 +6,7 @@ charset-normalizer==3.3.2
 cytoolz==0.12.2
 docopt==0.6.2
 dot20 @ git+https://github.com/octavei/dot-20.git@33bdf60be4936d2afb863f7a044292a3d90ef216
-dotacrawler @ git+https://github.com/DOTA-DOT20/dota-indexer-crawler.git@9f868a4242594f3402c664b26379f36fa24ab1d2
+dotacrawler @ git+https://github.com/DOTA-DOT20/dota-indexer-crawler.git@71826f40fd868e9d37fb92eb1c05d8de500f1c48
 dotadb @ git+https://github.com/DOTA-DOT20/dota-indexer-db.git@ce713b58ea7742e08dad7caf14e0e2b4fe94a1da
 ecdsa==0.18.0
 eth-hash==0.6.0
